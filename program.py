@@ -1,18 +1,18 @@
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# Define your OpenAI API key
-secret_key = "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"
-s = "fakekey"
-client = OpenAI(
-    api_key = os.environ.get(s), 
-)
+api_key = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI()
 chat_completion = client.chat.completions.create(
+
+    model="gpt-3.5-turbo",
     messages = [
         {
             "role": "user",
-            "content": "Say this is a test"
+            "content": "You are an expert python developer. Create for me a python program that checks if a number is prime. Do not write any explanations, just show me the code itself."
         }
-    ],
-    model="gpt-3.5-turbo",
+    ]
 )
+print(chat_completion.choices[0].text.strip())
