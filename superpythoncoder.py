@@ -25,7 +25,8 @@ Output:
     ACB
     CAB  ''',
     "a program that checks if a number is a palindrome",
-    "A program that finds the kth smallest element in a given binary search tree."
+    "A program that finds the kth smallest element in a given binary search tree.",
+    "A program that puts the user in a pokemon battle with three pokemons to choose from.The user battles the computer"
 ]
 
 #generates a code for a pyhton program based on an input program_description
@@ -93,19 +94,20 @@ def main():
 
         try:
             # Execute the generated Python code
-            subprocess.run(["python", filename], check=True)
+            subprocess.run(["python", filename], capture_output=True, text=True)
             print(f"Python code executed successfully (in {attempts} attempts)")
-            # subprocess.call(["open", file_path])
+            subprocess.call(["open", "generatedcode.py"])
             break  # No errors in the generated code, exit the loop
+
         except Exception as e:
             attempts += 1
-            error_description = e.stderr.decode('utf-8') if e.stderr else None
+            error_description = e.stderr if e.stderr else None
 
             print(f"attempt number {attempts} has failed!\nError running generated code! Error:\n{error_description}\n")
             # Sends the error to ChatGPT for fixing, referencing the original code request
             messages = [
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"I encountered an error: {error_description} while generating python code for '{requested_code_description}'. Here is the code you should fix:{python_code}."}
+                {"role": "user", "content": f"I encountered an error: {error_description} while generating python code for '{requested_code_description}'. Here is the code you should fix:{python_code}.make sure to write the whole corrected code when answering."}
             ]
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
