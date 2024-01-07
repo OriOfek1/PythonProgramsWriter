@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import subprocess
 from openai import OpenAI, Client
@@ -51,7 +52,7 @@ def extract_python_code(code):
         if end_index != -1:
             python_code = code[start_index:end_index]
             return python_code
-    return -1
+    return ""
 
 #writes a code to a file
 def write_to_file(code):
@@ -84,31 +85,37 @@ def main():
         
         python_code = extract_python_code(generated_code)
 
-        if python_code == -1:
-            print("something went wrong with Chat GPT.\nCode generation FAILED.")
-            break
-
-        filename = "generatedcode.py"
+        code_file = "generatedcode.py"
         write_to_file(python_code)
-        print(f"The code for '{chosen_program}' has been written to '{filename}'.")
+        print(f"The code for '{chosen_program}' has been written to '{code_file}'.")
 
+        # Execute the generated Python code
+        print("Running the program..")
         try:
-            # Execute the generated Python code
-            subprocess.run(["python", filename], capture_output=True, text=True)
+            subprocess.run([sys.executable, code_file], stdout = subprocess.PIPE, stderr = subprocess.PIPE, check=True)
+            print("The program executed successfully.")
             print(f"Python code executed successfully (in {attempts} attempts)")
             subprocess.call(["open", "generatedcode.py"])
-            break  # No errors in the generated code, exit the loop
+            break #the code was executed and opened. superpythoncoder finished.
+            # Print indicating successful execution
+        except (subprocess.CalledProcessError, Exception) as error:
+            # Handle subprocess errors or other unexpected exceptions
+            # print(f"Error during subprocess execution: {error}")
+            # might still be none
+            error_description = error.stderr if error.stderr else None
+            print(f"attempt number {attempts} has failed!\nError running generated code!\n")
+            # print(f"attempt number {attempts} has failed!\nError running generated code! Error:\n{error_description}\n")
 
-        except Exception as e:
-            attempts += 1
-            error_description = e.stderr if e.stderr else None
-
-            print(f"attempt number {attempts} has failed!\nError running generated code! Error:\n{error_description}\n")
             # Sends the error to ChatGPT for fixing, referencing the original code request
+            attempts += 1
             messages = [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"I encountered an error: {error_description} while generating python code for '{requested_code_description}'. Here is the code you should fix:{python_code}.make sure to write the whole corrected code when answering."}
-            ]
+    {"role": "system", "content": "You are a helpful assistant."},
+    {
+        "role": "user",
+        "content": f"I encountered an error: {error_description} while generating python code for '{requested_code_description}'. Here is the code you should fix:{python_code}. Make sure to write the whole corrected code when answering. Also, ensure the required modules are installed before running the script using the following lines of code:\n\nimport subprocess\nsubprocess.run(['pip', 'install', 'required_module'], check=True),you can only use 1 pyhton snippet in your answer."
+    }
+]
+
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages
@@ -118,7 +125,7 @@ def main():
 
 
 
-    if attempts == 5:
+    if attempts == 6:
         print("Code generation FAILED.")
 
 if __name__ == "__main__":
