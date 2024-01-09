@@ -34,7 +34,7 @@ Output:
 def generate_code(program_description):
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content":f"You are an expert python developer. Create for me a python program that {program_description}. Do not write any explanations, just show me the code itself.Also please include unit tests that check the logic of the program using 5 different inputs and expected outputs.anything but the code in your answer is redundant."}
+        {"role": "user", "content":f"You are an expert python developer. Create for me a python program that {program_description}. Do not write any explanations, just show me the code itself.Do not write programs that ask for user input. Also please include unit tests that check the logic of the program using 5 different inputs and expected outputs.anything but the code in your answer is redundant."}
     ]
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -62,6 +62,7 @@ def write_to_file(code):
 
 # Main function to initiate the code generation process
 def main():
+    print("\nWelcome to the Super Python Coder!\n")
     user_input = input("Tell me, which program would you like me to code for you? If you don't have an idea, just press enter and I will choose a random program to code: ")
 
     # Choosing a program from the list or user's input
@@ -87,13 +88,12 @@ def main():
 
         code_file = "generatedcode.py"
         write_to_file(python_code)
-        print(f"The code for '{chosen_program}' has been written to '{code_file}'.")
+        print(f"The code for '{chosen_program}' has been written to '{code_file}'.\n")
 
         # Execute the generated Python code
-        print("Running the program..")
+        print("Running the program..\n")
         try:
             subprocess.run([sys.executable, code_file], stdout = subprocess.PIPE, stderr = subprocess.PIPE, check=True)
-            print("The program executed successfully.")
             print(f"Python code executed successfully (in {attempts} attempts)")
             subprocess.call(["open", "generatedcode.py"])
             break #the code was executed and opened. superpythoncoder finished.
