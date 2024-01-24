@@ -62,6 +62,12 @@ def write_to_file(code):
 
 # Main function to initiate the code generation process
 def main():
+    if not api_key:
+        print(f"\n* * * * * *\n")
+        print("No API key found. Please insert your OpenAI API key in the .env file and try again.")
+        print(f"\n* * * * * *\n")
+        print("Exiting..\n")
+        return
     print("\nWelcome to the Super Python Coder!\n")
     user_input = input("Tell me, which program would you like me to code for you? If you don't have an idea, just press enter and I will choose a random program to code: ")
 
